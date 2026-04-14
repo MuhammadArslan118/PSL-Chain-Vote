@@ -1,4 +1,10 @@
-import { Proposal, Venue, Transaction } from '../types';
+import { Proposal, Venue, Transaction, Franchise } from '../types';
+
+export const MOCK_FRANCHISES: Franchise[] = [
+  { id: '1', name: 'Lahore Lions', highestBid: 1.5, highestBidder: '0x71C...976F', auctionActive: true, minted: false },
+  { id: '2', name: 'Karachi Kings', highestBid: 2.1, highestBidder: '0x3A2...1B4D', auctionActive: true, minted: false },
+  { id: '3', name: 'Islamabad United', highestBid: 1.8, highestBidder: '0x9F4...7E2C', auctionActive: false, minted: true },
+];
 
 export const MOCK_PROPOSALS: Proposal[] = Array.from({ length: 20 }, (_, i) => ({
   id: `prop-${i + 1}`,
@@ -24,9 +30,9 @@ export const MOCK_VENUES: Venue[] = [
 
 export const MOCK_TRANSACTIONS: Transaction[] = Array.from({ length: 10 }, (_, i) => ({
   id: `tx-${i}`,
-  type: ['vote', 'buy', 'mint', 'transfer'][i % 4] as any,
+  type: ['bid', 'withdraw', 'mint', 'transfer'][i % 4] as any,
   user: `0x${Math.random().toString(16).slice(2, 10)}...${Math.random().toString(16).slice(2, 6)}`,
-  details: i % 4 === 0 ? 'Voted for Lahore Venue' : i % 4 === 1 ? 'Bought 500 $LHQ' : 'Minted 1M $KIK',
+  details: i % 4 === 0 ? 'Placed Bid on Franchise' : i % 4 === 1 ? 'Withdrew Refund' : 'Minted Franchise NFT',
   timestamp: new Date(Date.now() - i * 3600000).toISOString(),
   hash: `0x${Math.random().toString(16).slice(2, 14)}...`,
   gas: '0.00042 ETH'

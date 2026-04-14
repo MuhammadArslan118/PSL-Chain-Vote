@@ -1,5 +1,14 @@
 export type View = 'admin' | 'owner' | 'fan' | 'blockchain';
 
+export interface Franchise {
+  id: string;
+  name: string;
+  highestBid: number;
+  highestBidder: string | null;
+  auctionActive: boolean;
+  minted: boolean;
+}
+
 export interface Proposal {
   id: string;
   investor: string;
@@ -31,7 +40,7 @@ export interface Venue {
 
 export interface Transaction {
   id: string;
-  type: 'vote' | 'mint' | 'buy' | 'transfer';
+  type: 'vote' | 'mint' | 'buy' | 'transfer' | 'bid' | 'withdraw';
   user: string;
   details: string;
   timestamp: string;

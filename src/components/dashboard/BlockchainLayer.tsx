@@ -1,11 +1,42 @@
 import React from 'react';
-import { ChevronRight, ArrowRightLeft, ShieldCheck } from 'lucide-react';
+import { ChevronRight, ArrowRightLeft, ShieldCheck, Database, Wallet } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { Card } from '../ui/Card';
-import { MOCK_TRANSACTIONS } from '../../data/mockData';
+import { useContract } from '../../context/ContractContext';
 
 export const BlockchainLayer = () => {
+  const { transactions, isConnected, connectWallet } = useContract();
+  const [gasPrice, setGasPrice] = React.useState(12);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setGasPrice(prev => Math.max(8, Math.min(45, prev + (Math.random() > 0.5 ? 1 : -1))));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!isConnected) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 animate-in fade-in duration-700">
+        <div className="w-20 h-20 rounded-3xl bg-psl-gold/10 flex items-center justify-center text-psl-gold neon-glow-gold">
+          <Database size={40} />
+        </div>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl font-black uppercase italic tracking-tighter">On-Chain Explorer</h2>
+          <p className="text-gray-400 max-w-xs">Connect your wallet to view real-time blockchain transactions and smart contract events.</p>
+        </div>
+        <button 
+          onClick={connectWallet}
+          className="bg-psl-gold text-black px-8 py-4 rounded-2xl font-black uppercase tracking-tighter hover:bg-psl-gold/90 transition-all neon-glow-gold flex items-center gap-2"
+        >
+          <Wallet size={20} />
+          Connect Wallet
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -19,44 +50,48 @@ export const BlockchainLayer = () => {
             <span className="text-xs font-mono text-psl-green">MAINNET ACTIVE</span>
           </div>
           <div className="w-px h-4 bg-psl-green/20" />
-          <span className="text-xs font-mono text-gray-400">GAS: 12 GWEI</span>
+          <span className="text-xs font-mono text-gray-400 uppercase tracking-tighter">GAS: {gasPrice} GWEI</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col gap-6">
           <Card title="Transaction History" subtitle="Live block explorer">
-            <div className="overflow-x-auto mt-2">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="pb-4 text-[10px] text-gray-500 font-mono uppercase">Type</th>
-                    <th className="pb-4 text-[10px] text-gray-500 font-mono uppercase">User</th>
-                    <th className="pb-4 text-[10px] text-gray-500 font-mono uppercase">Details</th>
-                    <th className="pb-4 text-[10px] text-gray-500 font-mono uppercase">Hash</th>
-                    <th className="pb-4 text-[10px] text-gray-500 font-mono uppercase">Time</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {MOCK_TRANSACTIONS.map((tx) => (
-                    <tr key={tx.id} className="group hover:bg-white/5 transition-colors">
-                      <td className="py-4">
-                        <span className={cn(
-                          "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                          tx.type === 'vote' ? "bg-psl-green/20 text-psl-green" : 
-                          tx.type === 'buy' ? "bg-psl-blue/20 text-psl-blue" : "bg-psl-gold/20 text-psl-gold"
-                        )}>
-                          {tx.type}
-                        </span>
-                      </td>
-                      <td className="py-4 text-xs font-mono text-gray-300">{tx.user}</td>
-                      <td className="py-4 text-xs font-medium">{tx.details}</td>
-                      <td className="py-4 text-xs font-mono text-psl-blue hover:underline cursor-pointer">{tx.hash}</td>
-                      <td className="py-4 text-[10px] text-gray-500 font-mono">{new Date(tx.timestamp).toLocaleTimeString()}</td>
+            <div className="overflow-x-auto mt-2 -mx-4 sm:mx-0">
+              <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/5">
+                      <th className="pb-4 text-[10px] text-gray-500 font-mono uppercase whitespace-nowrap pr-4">Type</th>
+                      <th className="pb-4 text-[10px] text-gray-500 font-mono uppercase whitespace-nowrap pr-4">User</th>
+                      <th className="pb-4 text-[10px] text-gray-500 font-mono uppercase whitespace-nowrap pr-4">Details</th>
+                      <th className="pb-4 text-[10px] text-gray-500 font-mono uppercase whitespace-nowrap pr-4 hidden sm:table-cell">Hash</th>
+                      <th className="pb-4 text-[10px] text-gray-500 font-mono uppercase whitespace-nowrap hidden md:table-cell">Time</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {transactions.map((tx) => (
+                      <tr key={tx.id} className="group hover:bg-white/5 transition-colors">
+                        <td className="py-4 pr-4 whitespace-nowrap">
+                          <span className={cn(
+                            "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                            tx.type === 'bid' ? "bg-psl-green/20 text-psl-green" : 
+                            tx.type === 'withdraw' ? "bg-psl-blue/20 text-psl-blue" : "bg-psl-gold/20 text-psl-gold"
+                          )}>
+                            {tx.type}
+                          </span>
+                        </td>
+                        <td className="py-4 pr-4 text-xs font-mono text-gray-300 whitespace-nowrap">
+                          {tx.user.length > 10 ? `${tx.user.slice(0, 6)}...${tx.user.slice(-4)}` : tx.user}
+                        </td>
+                        <td className="py-4 pr-4 text-xs font-medium whitespace-nowrap">{tx.details}</td>
+                        <td className="py-4 pr-4 text-xs font-mono text-psl-blue hover:underline cursor-pointer whitespace-nowrap hidden sm:table-cell">{tx.hash}</td>
+                        <td className="py-4 text-[10px] text-gray-500 font-mono whitespace-nowrap hidden md:table-cell">{new Date(tx.timestamp).toLocaleTimeString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </Card>
         </div>
@@ -69,16 +104,20 @@ export const BlockchainLayer = () => {
               </div>
               <div className="flex flex-col gap-3">
                 <button className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group">
-                  <span className="text-xs font-bold">read: getProposalCount()</span>
+                  <span className="text-xs font-bold">read: highestBid(uint256)</span>
                   <ChevronRight size={14} className="text-gray-500 group-hover:text-white" />
                 </button>
                 <button className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group">
-                  <span className="text-xs font-bold">read: getWinner()</span>
+                  <span className="text-xs font-bold">read: pendingRefunds(address)</span>
                   <ChevronRight size={14} className="text-gray-500 group-hover:text-white" />
                 </button>
                 <button className="w-full flex items-center justify-between p-3 rounded-xl bg-psl-blue/10 border border-psl-blue/20 hover:bg-psl-blue/20 transition-all group">
-                  <span className="text-xs font-bold text-psl-blue">write: castVote(uint256)</span>
+                  <span className="text-xs font-bold text-psl-blue">write: bid(uint256)</span>
                   <ArrowRightLeft size={14} className="text-psl-blue" />
+                </button>
+                <button className="w-full flex items-center justify-between p-3 rounded-xl bg-psl-green/10 border border-psl-green/20 hover:bg-psl-green/20 transition-all group">
+                  <span className="text-xs font-bold text-psl-green">write: withdrawRefund()</span>
+                  <ArrowRightLeft size={14} className="text-psl-green" />
                 </button>
               </div>
             </div>
